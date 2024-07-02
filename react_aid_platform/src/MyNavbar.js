@@ -15,8 +15,7 @@ const MyNavbar = () => {
                     <Nav.Link as={Link} to="/">Home</Nav.Link>
                     <Nav.Link as={Link} to="/submit_request">Submit A Help Request</Nav.Link>
                     <Nav.Link as={Link} to="/map">Tasks</Nav.Link>
-                    <Nav.Link as={Link} to="/messages">Messages</Nav.Link>
-                    <Nav.Link as={Link} to="/">Groups</Nav.Link>
+                    <Nav.Link as={Link} to="/conversations">Conversations</Nav.Link>
                     <Nav.Link as={Link} to="/about">About</Nav.Link>
                     {currentUser ? (
                         <Nav.Link as={Link} to="/logout">Logout</Nav.Link>

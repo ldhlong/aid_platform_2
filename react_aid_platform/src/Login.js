@@ -1,42 +1,58 @@
-import { useRef } from "react";
+import React, { useRef, useContext } from "react";
+import { AuthContext } from "./context/AuthContext";
 
-const Login = ({ setCurrUser, setShow }) => {
+const Login = ({ setShow }) => {
   const formRef = useRef();
+  const { setAuth } = useContext(AuthContext);
 
-  const login = async (userInfo, setCurrUser) => {
+  const login = async (userInfo) => {
     const url = "http://localhost:4000/login";
     try {
       const response = await fetch(url, {
-        method: "post",
+        method: "POST",
         headers: {
-          'content-type': 'application/json',
-          'accept': 'application/json'
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
         },
-        body: JSON.stringify(userInfo)
+        body: JSON.stringify({ user: userInfo })
       });
-      const data = await response.json();
-      if (!response.ok)
-        throw data.error;
+
+      if (!response.ok) {
+        throw new Error('Login failed');
+      }
+
+      const responseData = await response.json();
+      const { user_id } = responseData.data; // Access user_id from the nested structure
+
       localStorage.setItem("token", response.headers.get("Authorization"));
-      localStorage.setItem("user", JSON.stringify(data)); // Store user data in localStorage
-      setCurrUser(data);
+      localStorage.setItem("user", JSON.stringify(responseData.data)); // Store user data in localStorage
+      localStorage.setItem("user_id", user_id); // Store user_id locally
+
+      setAuth(prevAuth => ({
+        ...prevAuth,
+        user: responseData.data
+      })); // Update user in auth context
+
+      console.log("Logged in user:", responseData.data); // Verify user data
+
     } catch (error) {
-      console.log("error", error);
+      console.error("Error logging in:", error);
+      // Handle login error, e.g., show error message to user
     }
   };
 
-  const handleSubmit = e => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(formRef.current);
-    const data = Object.fromEntries(formData);
     const userInfo = {
-      "user": { email: data.email, password: data.password }
+      email: formData.get('email'),
+      password: formData.get('password')
     };
-    login(userInfo, setCurrUser);
-    e.target.reset();
+    await login(userInfo);
+    formRef.current.reset();
   };
 
-  const handleClick = e => {
+  const handleClick = (e) => {
     e.preventDefault();
     setShow(false);
   };

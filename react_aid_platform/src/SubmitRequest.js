@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Form, Button } from 'react-bootstrap';
 
 const SubmitRequest = ({ token }) => {
@@ -8,55 +8,46 @@ const SubmitRequest = ({ token }) => {
   const [latitude, setLatitude] = useState('');
   const [longitude, setLongitude] = useState('');
   const [message, setMessage] = useState('');
-  const [messageType, setMessageType] = useState(''); // 'success' or 'error'
-  const [userId, setUserId] = useState(null);
-
-  useEffect(() => {
-    // Retrieve user data from localStorage
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      const user = JSON.parse(storedUser);
-      setUserId(user.id); // Use the 'id' field from user data
-    }
-  }, []);
+  const [messageType, setMessageType] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     const requestData = {
-      request: {
-        id: userId, // Include the user ID in the request data
-        title,
-        request_type: requestType,
-        description,
-        latitude,
-        longitude,
-      },
+      title,
+      request_type: requestType,
+      description,
+      latitude,
+      longitude,
+      user_id: localStorage.getItem('user_id'), // Fetch user_id from localStorage
     };
 
     try {
       const response = await fetch('http://localhost:4000/submit_request', {
         method: 'POST',
         headers: {
-          'Accept': 'application/json',
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`, // Include the authentication token in the Authorization header
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(requestData),
+        body: JSON.stringify({ help_request: requestData }),
       });
 
       const data = await response.json();
 
-      if (!response.ok) {
-        throw new Error(data.errors.join(', ') || 'Request submission failed');
+      if (response.ok) {
+        setMessage('Request submitted successfully!');
+        setMessageType('success');
+        // Optionally clear form fields after successful submission
+        setTitle('');
+        setRequestType('');
+        setDescription('');
+        setLatitude('');
+        setLongitude('');
+      } else {
+        throw new Error(data.error || 'Request submission failed');
       }
-
-      // Set success message
-      setMessage('Request submitted successfully!');
-      setMessageType('success');
     } catch (error) {
       console.error('Request Submission Error:', error);
-      // Set error message
       setMessage(error.message || 'Request submission failed');
       setMessageType('error');
     }
@@ -117,7 +108,9 @@ const SubmitRequest = ({ token }) => {
           required
         />
       </Form.Group>
-      <Button variant="primary" type="submit">Submit Request</Button>
+      <Button variant="primary" type="submit">
+        Submit Request
+      </Button>
 
       {message && (
         <div style={{ color: messageType === 'success' ? 'green' : 'red' }}>
