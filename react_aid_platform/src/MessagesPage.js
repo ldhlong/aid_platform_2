@@ -77,6 +77,14 @@ function MessagesPage() {
 
   useEffect(() => {
     fetchMessages();
+
+    // Set up interval to fetch messages every 3 seconds
+    const intervalId = setInterval(() => {
+      fetchMessages();
+    }, 3000);
+
+    // Clean up the interval on component unmount
+    return () => clearInterval(intervalId);
   }, [conversationId, fetchMessages]);
 
   const handleSubmit = async (e) => {
