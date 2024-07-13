@@ -1,11 +1,9 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
-import { AuthContext } from './context/AuthContext';
 
 const ws = new WebSocket("ws://localhost:4000/cable");
 
 function MessagesPage() {
-  const { user } = useContext(AuthContext);
   const { conversationId } = useParams();
   const [messages, setMessages] = useState([]);
   const [guid, setGuid] = useState("");
@@ -14,6 +12,39 @@ function MessagesPage() {
   useEffect(() => {
     setMessagesContainer(document.getElementById("messages"));
   }, []);
+
+  const resetScroll = useCallback((data) => {
+    if (!messagesContainer) return;
+    messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  }, [messagesContainer]);
+
+  const setMessagesAndScrollDown = useCallback((data) => {
+    setMessages(data);
+    resetScroll(data);
+  }, [resetScroll]);
+
+  const fetchMessages = useCallback(async () => {
+    try {
+      const response = await fetch(`http://localhost:4000/messages?conversation_id=${conversationId}`);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch messages: ${response.statusText}`);
+      }
+
+      const text = await response.text(); // Get response body as text
+      console.log("Response text:", text); // Log response text for debugging
+      
+      if (!text) {
+        throw new Error("Empty response received");
+      }
+      
+      const data = JSON.parse(text); // Parse text as JSON
+      console.log("Parsed data:", data); // Log parsed data for debugging
+      
+      setMessagesAndScrollDown(data); // Ensure this updates messages state correctly
+    } catch (error) {
+      console.error("Error fetching messages:", error);
+    }
+  }, [conversationId, setMessagesAndScrollDown]);
 
   useEffect(() => {
     ws.onopen = () => {
@@ -37,7 +68,7 @@ function MessagesPage() {
       const data = JSON.parse(e.data);
       console.log("WebSocket message received:", data); // Log incoming WebSocket messages for debugging
       if (["ping", "welcome", "confirm_subscription"].includes(data.type)) return;
-    
+
       const message = data.message;
       console.log("Parsed message:", message); // Log parsed message for debugging
       setMessages((prevMessages) => {
@@ -46,18 +77,19 @@ function MessagesPage() {
         return newMessages;
       });
     };
+
     return () => {
       ws.close();
     };
-  }, [conversationId]);
+  }, [conversationId, resetScroll]);
 
   useEffect(() => {
     fetchMessages();
-  }, [conversationId]);
+  }, [conversationId, fetchMessages]);
 
   useEffect(() => {
     resetScroll(messages);
-  }, [messages, messagesContainer]);
+  }, [messages, messagesContainer, resetScroll]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -82,42 +114,6 @@ function MessagesPage() {
       }),
     });
   };
-  
-
-  const fetchMessages = async () => {
-    try {
-      const response = await fetch(`http://localhost:4000/messages?conversation_id=${conversationId}`);
-      
-      if (!response.ok) {
-        throw new Error(`Failed to fetch messages: ${response.statusText}`);
-      }
-  
-      const text = await response.text(); // Get response body as text
-      console.log("Response text:", text); // Log response text for debugging
-      
-      if (!text) {
-        throw new Error("Empty response received");
-      }
-      
-      const data = JSON.parse(text); // Parse text as JSON
-      console.log("Parsed data:", data); // Log parsed data for debugging
-      
-      setMessagesAndScrollDown(data); // Ensure this updates messages state correctly
-    } catch (error) {
-      console.error("Error fetching messages:", error);
-    }
-  };
-  
-  const setMessagesAndScrollDown = (data) => {
-    setMessages(data);
-    resetScroll(data);
-  };
-
-  const resetScroll = (data) => {
-    if (!messagesContainer) return;
-    messagesContainer.scrollTop = messagesContainer.scrollHeight;
-  };
-
 
   return (
     <div className="App">

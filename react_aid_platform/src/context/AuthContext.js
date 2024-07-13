@@ -1,18 +1,26 @@
-// src/context/AuthContext.js
-import React, { createContext, useState } from 'react';
+import React, { createContext, useState, useEffect } from 'react';
 
+// Create AuthContext
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [auth, setAuth] = useState({
-    token: null,
-    user: null,
-  });
+  const [user, setUser] = useState(null);
 
-  console.log('AuthProvider rendering', auth);
+  useEffect(() => {
+    // Mock fetch user
+    const fetchUser = async () => {
+      const userId = localStorage.getItem('user_id');
+      if (userId) {
+        // Simulate API call to get user details
+        setUser({ id: userId, email: 'user@example.com' });
+      }
+    };
+
+    fetchUser();
+  }, []);
 
   return (
-    <AuthContext.Provider value={{ auth, setAuth }}>
+    <AuthContext.Provider value={{ user }}>
       {children}
     </AuthContext.Provider>
   );
