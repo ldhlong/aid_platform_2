@@ -15,7 +15,7 @@ function ConversationsList() {
 
   const fetchConversations = async () => {
     try {
-      const response = await fetch(`http://localhost:4000/messages?sender_id=${user.id}`);
+      const response = await fetch(`http://localhost:4000/messages?user_id=${user.id}`);
       if (!response.ok) {
         throw new Error(`Failed to fetch conversations: ${response.statusText}`);
       }
