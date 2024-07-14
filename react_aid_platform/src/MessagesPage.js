@@ -8,6 +8,7 @@ function MessagesPage() {
   const [messages, setMessages] = useState([]);
   const [guid, setGuid] = useState("");
   const [messagesContainer, setMessagesContainer] = useState(null);
+  const user_id = localStorage.getItem("user_id");
 
   useEffect(() => {
     setMessagesContainer(document.getElementById("messages"));
@@ -92,6 +93,7 @@ function MessagesPage() {
     const body = e.target.message.value;
     e.target.message.value = "";
 
+    // Ensure user_id is properly retrieved from localStorage
     const user_id = localStorage.getItem("user_id");
 
     // Adjust the URL and message structure based on your backend requirements
@@ -105,6 +107,7 @@ function MessagesPage() {
           body,
           conversation_id: conversationId,
           sender_id: user_id,
+          user_id: user_id, // Include user_id in the POST request
         }),
       });
 
@@ -122,10 +125,19 @@ function MessagesPage() {
   return (
     <div className="messagesPage">
       <h1>Conversation ID: {conversationId}</h1>
+      <h1>Messages For: {user_id}</h1>
+
       <div className="messages" id="messages">
         {messages.map((message) => (
-          <div className="message" key={message.id}>
-            <p>{message.body}</p>
+          <div
+            key={message.id}
+            className={`message-content p-3 ${
+              message.sender_id == user_id
+                ? 'bg-primary text-white rounded-right'
+                : 'bg-secondary text-black rounded-left'
+            }`}
+          >
+            <p className="mb-0">{message.body}</p>
           </div>
         ))}
       </div>
@@ -138,5 +150,6 @@ function MessagesPage() {
     </div>
   );
 }
+
 
 export default MessagesPage;

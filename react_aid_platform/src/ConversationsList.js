@@ -15,7 +15,7 @@ function ConversationsList() {
 
   const fetchConversations = async () => {
     try {
-      const response = await fetch(`http://localhost:4000/messages?user_id=${user.id}`);
+      const response = await fetch(`http://localhost:4000/conversations?user_id=${user.id}`);
       if (!response.ok) {
         throw new Error(`Failed to fetch conversations: ${response.statusText}`);
       }
@@ -40,11 +40,11 @@ function ConversationsList() {
           conversations.map((conversation) => {
             console.log("Conversation:", conversation); // Debugging log
             return (
-              <li key={conversation.conversation_id} onClick={() => handleConversationSelect(conversation.conversation_id)}>
+              <li key={conversation.id} onClick={() => handleConversationSelect(conversation.id)}>
                 <div>
-                  <p>Conversation with: {conversation.user_id}</p>
-                  <p>Last Message: {conversation.body}</p>
-                  <p>Sent at: {new Date(conversation.created_at).toLocaleString()}</p>
+                  <p>Conversation with: {conversation.sender_id === user.id ? conversation.user_id : conversation.sender_id}</p>
+                  <p>Last Message: {conversation.last_message}</p>
+                  <p>Sent at: {new Date(conversation.updated_at).toLocaleString()}</p>
                 </div>
               </li>
             );
