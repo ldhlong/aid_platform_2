@@ -1,12 +1,38 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Container } from 'react-bootstrap';
 
 const HomePage = () => {
-  // Dummy data for completedRequestsCount
-  const completedRequestsCount = 0;
+  const [completedRequestsCount, setCompletedRequestsCount] = useState(0);
 
-  // Convert the completedRequestsCount to an array of digits
+  useEffect(() => {
+    const fetchCompletedRequestsCount = async () => {
+      try {
+        console.log('Attempting to fetch completed requests count...');
+        
+        const response = await fetch('http://localhost:4000/api/completed_requests_count', {
+          method: 'GET',
+        });
+
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+
+        const data = await response.json();
+        console.log('Fetched completed requests count:', data.count);
+        setCompletedRequestsCount(data.count);
+      } catch (error) {
+        console.error('Failed to fetch completed requests count:', error);
+      }
+    };
+
+    fetchCompletedRequestsCount(); // Fetch initially
+
+    const intervalId = setInterval(fetchCompletedRequestsCount, 5000); // Fetch every 5 seconds
+
+    return () => clearInterval(intervalId); // Cleanup interval on component unmount
+  }, []);
+
   const countDigits = completedRequestsCount.toString().split('');
 
   return (

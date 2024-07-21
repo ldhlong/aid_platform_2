@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useJsApiLoader, GoogleMap, Marker, InfoWindow } from '@react-google-maps/api';
 
+const oneTimeTaskIcon = 'http://maps.google.com/mapfiles/ms/icons/blue-dot.png'; // Blue dot for one-time tasks
+const materialNeedIcon = 'http://maps.google.com/mapfiles/ms/icons/red-dot.png'; // Red dot for material needs
+
 const containerStyle = {
   width: '100%',
   height: '600px'
@@ -48,36 +51,45 @@ function MapComponent() {
   const handleAssign = async (requestCount) => {
     try {
       const token = localStorage.getItem("token");
-      const user_id = localStorage.getItem("user_id"); // Retrieve user_id from localStorage
-  
+      const user_id = localStorage.getItem("user_id");
+
       const response = await fetch(`http://localhost:4000/help_requests/${requestCount}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ completion_status: true, accepted_by_user: user_id})
+        body: JSON.stringify({ completion_status: true, accepted_by_user: user_id })
       });
-  
+
       if (!response.ok) {
         throw new Error('Failed to assign marker');
       }
-  
+
       const updatedMarker = await response.json();
       setMarkers(markers.map(marker => marker.request_count === requestCount ? updatedMarker : marker));
       setSelected(updatedMarker);
-  
-      // Navigate to messages page after assignment
+
       navigate(`/messages/${updatedMarker.request_count}`);
     } catch (error) {
       console.error('Error assigning marker:', error);
     }
   };
-  
 
   if (loadError) {
     return <div>Error loading maps</div>;
   }
+
+  const getColorStyle = (type) => {
+    return {
+      backgroundColor: type === 'one-time-task' ? 'blue' : 'red',
+      width: '10px',
+      height: '10px',
+      borderRadius: '50%',
+      display: 'inline-block',
+      marginRight: '10px'
+    };
+  };
 
   return isLoaded ? (
     <div>
@@ -93,6 +105,7 @@ function MapComponent() {
               lat: parseFloat(marker.latitude),
               lng: parseFloat(marker.longitude),
             }}
+            icon={marker.request_type === 'one-time-task' ? oneTimeTaskIcon : materialNeedIcon}
             onClick={() => setSelected(marker)}
           />
         ))}
@@ -109,6 +122,7 @@ function MapComponent() {
               <p>{selected.description}</p>
               <p>Latitude: {selected.latitude}</p>
               <p>Longitude: {selected.longitude}</p>
+              <p>Type: {selected.request_type}</p> {/* Display request type */}
               <button onClick={() => handleAssign(selected.request_count)}>Assign to Me</button>
             </div>
           </InfoWindow>
@@ -118,7 +132,8 @@ function MapComponent() {
         <h2>List of Markers:</h2>
         <ul>
           {markers.map(marker => (
-            <li key={marker.request_count}>
+            <li key={marker.request_count} style={{ display: 'flex', alignItems: 'center' }}>
+              <div style={getColorStyle(marker.request_type)}></div>
               {marker.title} - Lat: {marker.latitude}, Lng: {marker.longitude}
               <button style={{ marginLeft: '10px' }} onClick={() => handleAssign(marker.request_count)}>Assign to Me</button>
             </li>
