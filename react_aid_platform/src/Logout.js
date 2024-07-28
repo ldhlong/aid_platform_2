@@ -1,10 +1,8 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from './context/AuthContext';
-import { useContext } from 'react';
 
-const Logout = () => {
-  const { setAuth } = useContext(AuthContext);
+const Logout = ({ setAuth }) => {
   const navigate = useNavigate(); // Hook to navigate programmatically
 
   const logout = async () => {

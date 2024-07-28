@@ -5,7 +5,8 @@ import { AuthContext } from './context/AuthContext'; // Import AuthContext
 import Logout from './Logout'; // Import Logout component
 
 const MyNavbar = () => {
-  const { user } = useContext(AuthContext); // Access user from context
+  const { auth, setAuth } = useContext(AuthContext); // Access auth and setAuth from context
+  const { user } = auth;
 
   return (
     <Navbar bg="light" expand="lg">
@@ -14,12 +15,14 @@ const MyNavbar = () => {
       <Navbar.Collapse id="basic-navbar-nav">
         <Nav className="mr-auto">
           <Nav.Link as={Link} to="/">Home</Nav.Link>
-          <Nav.Link as={Link} to="/submit_request">Submit A Help Request</Nav.Link>
-          <Nav.Link as={Link} to="/map">Tasks</Nav.Link>
-          <Nav.Link as={Link} to="/conversations">Conversations</Nav.Link>
-          <Nav.Link as={Link} to="/about">About</Nav.Link>
           {user ? (
-            <Logout /> // Use Logout component without passing setUser
+            <>
+              <Nav.Link as={Link} to="/submit_request">Submit A Help Request</Nav.Link>
+              <Nav.Link as={Link} to="/map">Tasks</Nav.Link>
+              <Nav.Link as={Link} to="/conversations">Conversations</Nav.Link>
+              <Nav.Link as={Link} to="/about">About</Nav.Link>
+              <Logout setAuth={setAuth} /> {/* Show Logout button when user is logged in */}
+            </>
           ) : (
             <>
               <Nav.Link as={Link} to="/login">Login</Nav.Link>
