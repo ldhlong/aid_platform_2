@@ -1,9 +1,12 @@
-import React, { useRef, useContext } from "react";
+import React, { useRef, useContext, useState } from "react";
 import { AuthContext } from "./context/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 const Login = ({ setShow }) => {
   const formRef = useRef();
-  const { setAuth } = useContext(AuthContext);
+  const { setAuth } = useContext(AuthContext); // Ensure setAuth is correctly retrieved from context
+  const navigate = useNavigate();
+  const [message, setMessage] = useState(""); // State for success message
 
   const login = async (userInfo) => {
     const url = "http://localhost:4000/login";
@@ -18,26 +21,42 @@ const Login = ({ setShow }) => {
       });
 
       if (!response.ok) {
-        throw new Error('Login failed');
+        const errorData = await response.json();
+        console.error("Login error response:", errorData);
+        setMessage(errorData.message || 'Login failed. Please check your credentials and try again.');
+        return;
       }
 
       const responseData = await response.json();
-      const { user_id } = responseData.data; // Access user_id from the nested structure
+      console.log("Login response data:", responseData);
 
-      localStorage.setItem("token", response.headers.get("Authorization"));
-      localStorage.setItem("user", JSON.stringify(responseData.data)); // Store user data in localStorage
-      localStorage.setItem("user_id", user_id); // Store user_id locally
+      if (responseData.status && responseData.status.code === 200) {
+        const { user_id } = responseData.data;
 
-      setAuth(prevAuth => ({
-        ...prevAuth,
-        user: responseData.data
-      })); // Update user in auth context
+        // Save user data and token in local storage
+        localStorage.setItem("token", response.headers.get("Authorization")); // Ensure Authorization header is set if used
+        localStorage.setItem("user", JSON.stringify(responseData.data));
+        localStorage.setItem("user_id", user_id);
 
-      console.log("Logged in user:", responseData.data); // Verify user data
+        // Update authentication context
+        setAuth(prevAuth => ({
+          ...prevAuth,
+          user: responseData.data
+        }));
+
+        // Display success message and redirect to home
+        setMessage("Successfully logged in!");
+        setTimeout(() => {
+          setMessage(""); // Clear message after 3 seconds
+          navigate('/'); // Redirect to home page
+        }, 3000); // Adjust delay as needed
+      } else {
+        setMessage("An error occurred while logging in. Please try again.");
+      }
 
     } catch (error) {
       console.error("Error logging in:", error);
-      // Handle login error, e.g., show error message to user
+      setMessage("An error occurred while logging in. Please try again.");
     }
   };
 
@@ -67,6 +86,7 @@ const Login = ({ setShow }) => {
         <input type='submit' value="Login" />
       </form>
       <br />
+      {message && <div>{message}</div>} {/* Display success message */}
       <div>Not registered yet, <a href="#signup" onClick={handleClick}>Signup</a> </div>
     </div>
   );

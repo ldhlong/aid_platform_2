@@ -9,6 +9,7 @@ function MessagesPage() {
   const [guid, setGuid] = useState("");
   const [messagesContainer, setMessagesContainer] = useState(null);
   const user_id = localStorage.getItem("user_id");
+  console.log("Retrieved user_id from localStorage:", user_id);
 
   useEffect(() => {
     setMessagesContainer(document.getElementById("messages"));
@@ -125,7 +126,6 @@ function MessagesPage() {
   return (
     <div className="messagesPage">
       <h1>Conversation ID: {conversationId}</h1>
-      <h1>Messages For: {user_id}</h1>
 
       <div className="messages" id="messages">
         {messages.map((message) => (

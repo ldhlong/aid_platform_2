@@ -42,40 +42,56 @@ function MapComponent() {
         throw new Error('Failed to fetch markers');
       }
       const data = await response.json();
-      setMarkers(data);
+      setMarkers(data.filter(marker => marker.visible));  // Adjust filtering as needed
     } catch (error) {
       console.error('Error fetching markers:', error);
     }
   };
-
+  
   const handleAssign = async (requestCount) => {
     try {
       const token = localStorage.getItem("token");
       const user_id = localStorage.getItem("user_id");
-
+      
+      const requestBody = {
+        help_request: {
+          completion_status: false,
+          accepted_by_user: user_id,
+          visible: true
+        }
+      };
+  
+      console.log('Sending PATCH request with payload:', requestBody);
+  
       const response = await fetch(`http://localhost:4000/help_requests/${requestCount}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ completion_status: true, accepted_by_user: user_id })
+        body: JSON.stringify(requestBody)
       });
-
+  
       if (!response.ok) {
         throw new Error('Failed to assign marker');
       }
-
-      const updatedMarker = await response.json();
-      setMarkers(markers.map(marker => marker.request_count === requestCount ? updatedMarker : marker));
-      setSelected(updatedMarker);
-
-      navigate(`/messages/${updatedMarker.request_count}`);
+  
+      const newMarker = await response.json();
+      
+      // Fetch the updated list of markers
+      fetchMarkers();
+      
+      // Optionally navigate to the new conversation
+      navigate(`/messages/${newMarker.conversation_id}`);
+  
     } catch (error) {
       console.error('Error assigning marker:', error);
     }
   };
-
+  
+  
+  
+  
   if (loadError) {
     return <div>Error loading maps</div>;
   }

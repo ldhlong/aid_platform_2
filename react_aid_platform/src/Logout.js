@@ -1,29 +1,39 @@
-const Logout =({setCurrUser})=>{
-    const logout=async (setCurrUser)=>{
-        try {
-            const response=await fetch("http://localhost:4000/logout",{
-                method: "delete",
-                headers: {
-                    "content-type": "application/json",
-                    "authorization": localStorage.getItem("token")
-                },
-            })
-            const data=await response.json()
-            if(!response.ok) throw data.error
-            localStorage.removeItem("token")
-            setCurrUser(null)
-        } catch (error) {
-            console.log("error", error)
-        }
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
+import { AuthContext } from './context/AuthContext';
+import { useContext } from 'react';
+
+const Logout = () => {
+  const { setAuth } = useContext(AuthContext);
+  const navigate = useNavigate(); // Hook to navigate programmatically
+
+  const logout = async () => {
+    try {
+      const response = await fetch("http://localhost:4000/logout", {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": localStorage.getItem("token"),
+        },
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message);
+      
+      // Clear local storage and update auth context
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      localStorage.removeItem("user_id");
+      setAuth({ user: null }); // Clear user context
+
+      navigate('/'); // Redirect to home page
+    } catch (error) {
+      console.error("Error logging out:", error);
     }
-    const handleClick=e=>{
-        e.preventDefault()
-         logout(setCurrUser)
-    }
-    return (
-        <div>
-            <input type="button" value='Logout' onClick={handleClick}/>
-        </div>
-    )
-}
-export default Logout
+  };
+
+  return (
+    <button onClick={logout}>Logout</button>
+  );
+};
+
+export default Logout;
