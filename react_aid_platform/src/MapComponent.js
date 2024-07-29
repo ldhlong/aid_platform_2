@@ -52,7 +52,7 @@ function MapComponent() {
     try {
       const token = localStorage.getItem("token");
       const user_id = localStorage.getItem("user_id");
-      
+  
       const requestBody = {
         help_request: {
           completion_status: false,
@@ -60,8 +60,6 @@ function MapComponent() {
           visible: true
         }
       };
-  
-      console.log('Sending PATCH request with payload:', requestBody);
   
       const response = await fetch(`http://localhost:4000/help_requests/${requestCount}`, {
         method: 'PATCH',
@@ -76,19 +74,25 @@ function MapComponent() {
         throw new Error('Failed to assign marker');
       }
   
-      const newMarker = await response.json();
-      
+      const result = await response.json();
+  
+      // Extract conversation_id from the response
+      const conversationId = result.conversation_id;
+      if (!conversationId) {
+        console.error('No conversation_id returned from PATCH request');
+        return;
+      }
+  
       // Fetch the updated list of markers
       fetchMarkers();
-      
-      // Optionally navigate to the new conversation
-      navigate(`/messages/${newMarker.conversation_id}`);
+  
+      // Navigate to the correct conversation ID
+      navigate(`/messages/${conversationId}`);
   
     } catch (error) {
       console.error('Error assigning marker:', error);
     }
   };
-  
   
   
   

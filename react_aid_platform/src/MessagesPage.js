@@ -1,5 +1,6 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useContext } from 'react';
 import { useParams } from 'react-router-dom';
+import { AuthContext } from './context/AuthContext'; // Import AuthContext
 
 const ws = new WebSocket("ws://localhost:4000/cable");
 
@@ -8,8 +9,8 @@ function MessagesPage() {
   const [messages, setMessages] = useState([]);
   const [guid, setGuid] = useState("");
   const [messagesContainer, setMessagesContainer] = useState(null);
-  const user_id = localStorage.getItem("user_id");
-  console.log("Retrieved user_id from localStorage:", user_id);
+  const { auth } = useContext(AuthContext); // Access auth context
+  const user_id = auth.user?.user_id; // Retrieve user_id from context
 
   useEffect(() => {
     setMessagesContainer(document.getElementById("messages"));
@@ -94,8 +95,8 @@ function MessagesPage() {
     const body = e.target.message.value;
     e.target.message.value = "";
 
-    // Ensure user_id is properly retrieved from localStorage
-    const user_id = localStorage.getItem("user_id");
+    // Ensure user_id is properly retrieved from context
+    if (!user_id) return; // Handle the case where user_id is not available
 
     // Adjust the URL and message structure based on your backend requirements
     try {
@@ -132,7 +133,7 @@ function MessagesPage() {
           <div
             key={message.id}
             className={`message-content p-3 ${
-              message.sender_id == user_id
+              message.sender_id === user_id
                 ? 'bg-primary text-white rounded-right'
                 : 'bg-secondary text-black rounded-left'
             }`}
@@ -150,6 +151,5 @@ function MessagesPage() {
     </div>
   );
 }
-
 
 export default MessagesPage;
