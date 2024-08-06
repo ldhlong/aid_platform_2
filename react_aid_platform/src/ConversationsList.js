@@ -12,7 +12,6 @@ function ConversationsList() {
   useEffect(() => {
     const fetchConversations = async () => {
       if (user) {
-        console.log('Fetching conversations for user:', user);
         try {
           const response = await fetch(`http://localhost:4000/conversations?user_id=${user.user_id}`);
           if (!response.ok) {
@@ -24,8 +23,6 @@ function ConversationsList() {
         } catch (error) {
           console.error('Error fetching conversations:', error);
         }
-      } else {
-        console.log('User not available');
       }
     };
 
@@ -43,10 +40,7 @@ function ConversationsList() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          completion_status: true,
-          visible: false
-        }),
+        body: JSON.stringify({ completion_status: true, visible: false }),
       });
 
       if (!response.ok) {
@@ -55,11 +49,10 @@ function ConversationsList() {
 
       const updatedConversations = conversations.map((conversation) =>
         conversation.help_request_id === helpRequestId
-          ? { ...conversation, completion_status: true }
+          ? { ...conversation, completion_status: true, visible: false }
           : conversation
       );
       setConversations(updatedConversations);
-      console.log('Help request marked as complete');
     } catch (error) {
       console.error('Error marking help request as complete:', error);
     }
@@ -71,26 +64,39 @@ function ConversationsList() {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-        }
+        },
       });
-
+  
       if (!response.ok) {
         throw new Error(`Failed to republish help request: ${response.statusText}`);
       }
-
-      console.log('Help request republished');
+  
+      const updatedConversations = conversations.map((conversation) =>
+        conversation.help_request_id === helpRequestId
+          ? { ...conversation, visible: true, assigned_users_count: 0 }
+          : conversation
+      );
+      setConversations(updatedConversations);
     } catch (error) {
       console.error('Error republishing help request:', error);
     }
   };
+  
 
-  const canRepublish = (createdAt) => {
-    const createdTime = new Date(createdAt).getTime();
-    const now = Date.now();
-    const twentyFourHoursInMilliseconds = 24 * 60 * 60 * 1000;
-    return (now - createdTime) >= twentyFourHoursInMilliseconds;
+  const canRepublish = (createdAt, completionStatus, visible, assignedUsersCount) => {
+    if (!createdAt) {
+      console.error('Invalid createdAt value:', createdAt);
+      return false; // or return a default value based on your logic
+    }
+  
+    const isoDateString = createdAt.replace(' ', 'T').split('.')[0] + 'Z';
+    const createdAtDate = new Date(isoDateString);
+    const now = new Date();
+  
+    // Check if the request is not completed, not visible, has been accepted by 5 users, and was created at least 24 hours ago
+    return !completionStatus && !visible && assignedUsersCount >= 5 && now - createdAtDate >= 24 * 60 * 60 * 1000;
   };
-
+  
   return (
     <div className="conversationsList">
       <h2>Conversations</h2>
@@ -107,7 +113,7 @@ function ConversationsList() {
                 <p>Last Message: {conversation.last_message}</p>
                 <p>Sent at: {new Date(conversation.updated_at).toLocaleString()}</p>
                 <p>Help Request ID: {conversation.help_request_id}</p>
-                {canRepublish(conversation.created_at) && (
+                {conversation.visible && conversation.user_id === user.user_id && canRepublish(conversation.created_at, conversation.completion_status) && (
                   <Button onClick={(e) => {
                     e.stopPropagation();
                     republishHelpRequest(conversation.help_request_id);

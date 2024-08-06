@@ -56,8 +56,7 @@ function MapComponent() {
       const requestBody = {
         help_request: {
           completion_status: false,
-          accepted_by_user: user_id,
-          visible: true
+          accepted_by_user: user_id
         }
       };
   
