@@ -48,7 +48,6 @@ const Login = ({ setShow }) => {
         setMessage("Successfully logged in!");
         setTimeout(() => {
           setMessage(""); // Clear message after 3 seconds
-          navigate('/'); // Redirect to home page
         }, 3000); // Adjust delay as needed
       } else {
         setMessage("An error occurred while logging in. Please try again.");
