@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const RegistrationForm = () => {
   const [formData, setFormData] = useState({
@@ -45,15 +46,89 @@ const RegistrationForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input type="text" name="first_name" value={formData.first_name} onChange={handleChange} placeholder="First Name" />
-      <input type="text" name="last_name" value={formData.last_name} onChange={handleChange} placeholder="Last Name" />
-      <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="Email" />
-      <input type="password" name="password" value={formData.password} onChange={handleChange} placeholder="Password" />
-      <input type="password" name="password_confirmation" value={formData.password_confirmation} onChange={handleChange} placeholder="Confirm Password" />
-      <input type="file" name="photo" onChange={handleFileChange} />
-      <button type="submit">Register</button>
-    </form>
+    <div className="container mt-5">
+      <div className="card bg-light">
+        <div className="card-header text-center">
+          <h2>Sign-up</h2>
+        </div>
+        <div className="card-body">
+          <form onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label htmlFor="first_name">First Name:</label>
+              <input 
+                type="text" 
+                className="form-control" 
+                id="first_name" 
+                name="first_name" 
+                value={formData.first_name} 
+                onChange={handleChange} 
+                placeholder="First Name" 
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="last_name">Last Name:</label>
+              <input 
+                type="text" 
+                className="form-control" 
+                id="last_name" 
+                name="last_name" 
+                value={formData.last_name} 
+                onChange={handleChange} 
+                placeholder="Last Name" 
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="email">Email:</label>
+              <input 
+                type="email" 
+                className="form-control" 
+                id="email" 
+                name="email" 
+                value={formData.email} 
+                onChange={handleChange} 
+                placeholder="Email" 
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="password">Password:</label>
+              <input 
+                type="password" 
+                className="form-control" 
+                id="password" 
+                name="password" 
+                value={formData.password} 
+                onChange={handleChange} 
+                placeholder="Password" 
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="password_confirmation">Confirm Password:</label>
+              <input 
+                type="password" 
+                className="form-control" 
+                id="password_confirmation" 
+                name="password_confirmation" 
+                value={formData.password_confirmation} 
+                onChange={handleChange} 
+                placeholder="Confirm Password" 
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="photo">Photo ID:</label>
+              <input 
+                type="file" 
+                className="form-control-file" 
+                id="photo" 
+                name="photo" 
+                onChange={handleFileChange} 
+              />
+            </div>
+            <div className="text-center mt-3">
+              <button type="submit" className="btn btn-primary">Complete Registration</button>
+            </div>          </form>
+        </div>
+      </div>
+    </div>
   );
 };
 

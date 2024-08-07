@@ -1,6 +1,7 @@
 import React, { useRef, useContext, useState } from "react";
 import { AuthContext } from "./context/AuthContext";
 import { useNavigate } from "react-router-dom";
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 const Login = ({ setShow }) => {
   const formRef = useRef();
@@ -76,17 +77,42 @@ const Login = ({ setShow }) => {
   };
 
   return (
-    <div>
-      <form ref={formRef} onSubmit={handleSubmit}>
-        Email: <input type="email" name='email' placeholder="email" />
-        <br />
-        Password: <input type="password" name='password' placeholder="password" />
-        <br />
-        <input type='submit' value="Login" />
-      </form>
-      <br />
-      {message && <div>{message}</div>} {/* Display success message */}
-      <div>Not registered yet, <a href="#signup" onClick={handleClick}>Signup</a> </div>
+    <div className="container mt-5">
+      <div className="card bg-light">
+        <div className="card-header text-center">
+          <h2>Login</h2>
+        </div>
+        <div className="card-body">
+          <form ref={formRef} onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label htmlFor="email">Email:</label>
+              <input 
+                type="email" 
+                className="form-control" 
+                id="email" 
+                name="email" 
+                placeholder="Email" 
+              />
+            </div>
+            <div className="form-group">
+              <label htmlFor="password">Password:</label>
+              <input 
+                type="password" 
+                className="form-control" 
+                id="password" 
+                name="password" 
+                placeholder="Password" 
+              />
+            </div>
+            <div className="text-center mt-3">
+              <input type="submit" className="btn btn-primary" value="Login" />
+            </div>
+          </form>
+          <br />
+          {message && <div className="alert alert-info">{message}</div>} {/* Display success message */}
+          <div>Not registered yet? <a href="#signup" onClick={handleClick}>Signup</a></div>
+        </div>
+      </div>
     </div>
   );
 };

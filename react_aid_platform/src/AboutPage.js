@@ -7,7 +7,7 @@ const AboutPage = () => {
     <Container className="mt-5">
       <Row className="mb-4">
         <Col>
-          <h1>About NeighborConnect</h1>
+        <h1 className="text-center">About NeighborConnect</h1>
         </Col>
       </Row>
       <Row className="mb-4">
