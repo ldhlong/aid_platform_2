@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 import 'bootstrap/dist/css/bootstrap.min.css';
 
 const RegistrationForm = () => {
@@ -32,16 +31,19 @@ const RegistrationForm = () => {
     const form = new FormData();
     Object.keys(formData).forEach(key => form.append(`user[${key}]`, formData[key]));
 
-    axios.post('http://localhost:4000/signup', form, {
+    fetch('http://localhost:4000/signup', {
+      method: 'POST',
+      body: form,
       headers: {
-        'Content-Type': 'multipart/form-data'
+        'Accept': 'application/json'
       }
     })
-    .then(response => {
-      console.log('User created', response.data);
+    .then(response => response.json())
+    .then(data => {
+      console.log('User created', data);
     })
     .catch(error => {
-      console.error('There was an error creating the user!', error.response.data);
+      console.error('There was an error creating the user!', error);
     });
   };
 
@@ -125,7 +127,8 @@ const RegistrationForm = () => {
             </div>
             <div className="text-center mt-3">
               <button type="submit" className="btn btn-primary">Complete Registration</button>
-            </div>          </form>
+            </div>          
+          </form>
         </div>
       </div>
     </div>
