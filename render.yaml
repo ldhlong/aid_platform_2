@@ -1,12 +1,12 @@
 databases:
   - name: mysite
-    databaseName: mysite
+    databaseName: aid_platform_postgresql
     user: mysite
     plan: free
 
 services:
   - type: web
-    name: mysite
+    name: aid_platform_2
     runtime: ruby
     plan: free
     buildCommand: "./bin/render-build.sh"
