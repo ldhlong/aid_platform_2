@@ -1,7 +1,7 @@
 databases:
-  - name: aid_platform_postgresql
-    databaseName: aid_platform_postgresql
-    user: postgres
+  - name: mysite
+    databaseName: mysite
+    user: mysite
     plan: free
 
 services:
