@@ -18,8 +18,8 @@ default: &default
   # For details on connection pooling, see Rails configuration guide
   # https://guides.rubyonrails.org/configuring.html#database-pooling
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-  username: <%= ENV["username"] %>
-  password: <%= ENV["password"] %>
+  username: postgres
+  password: blaise1$
 
 development:
   <<: *default
@@ -81,6 +81,6 @@ test:
 #
 production:
   <<: *default
-  database: aid_platform_development
-  username: <%= ENV["username"] %>
-  password: <%= ENV["password"] %>
+  database: aid_platform_production
+  username: aid_platform
+  password: <%= ENV["AID_PLATFORM_DATABASE_PASSWORD"] %>
