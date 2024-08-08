@@ -1,0 +1,16 @@
+=> 
+[32m#<HelpRequest:0x00000251e8729610[0m
+ user_id: [34m[1m2[0m,
+ title: [31m[1m"[0m[31mCookies[0m[31m[1m"[0m,
+ request_type: [31m[1m"[0m[31mone-time-task[0m[31m[1m"[0m,
+ description: [31m[1m"[0m[31mWould like a dozen[0m[31m[1m"[0m,
+ accepted_by_user: [31m[1m"[0m[31m13[0m[31m[1m"[0m,
+ completion_status: [36m[1mtrue[0m,
+ created_at: Mon, 22 Jul 2024 02:25:19.748385000 UTC +00:00,
+ updated_at: Mon, 29 Jul 2024 19:38:40.002253000 UTC +00:00,
+ latitude: [35m[1m40.444[0m,
+ longitude: -[35m[1m80.0002[0m,
+ request_count: [34m[1m133920[0m,
+ conversation_id: [34m[1m97[0m,
+ assigned_users_count: [34m[1m2[0m,
+ visible: [36m[1mfalse[0m[32m>[0m
