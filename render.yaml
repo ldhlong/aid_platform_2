@@ -1,4 +1,4 @@
-atabases:
+databases:
   - name: aid_platform_development
     databaseName: aid_platform_development
     user: aid_platform_development
