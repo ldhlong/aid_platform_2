@@ -14,6 +14,8 @@ gem 'devise'
 
 gem 'devise-jwt'
 
+gem 'react_on_rails', '11.1.4'
+
 gem "jsonapi-serializer"
 
 gem 'carrierwave'
