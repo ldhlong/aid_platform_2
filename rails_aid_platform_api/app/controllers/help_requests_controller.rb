@@ -117,17 +117,22 @@ class HelpRequestsController < ApplicationController
   
     if help_request && conversation
       # Update HelpRequest
-      help_request.decrement!(:assigned_users_count) # Assuming you have this field
+      help_request.decrement!(:assigned_users_count)
       help_request.update(visible: true)
   
       # Update Conversation
       conversation.update(visible: false)
   
-      render json: { message: "Help request republished successfully" }, status: :ok
+      render json: { 
+        message: "Help request republished successfully", 
+        help_request: help_request, 
+        conversation: conversation 
+      }, status: :ok
     else
       render json: { error: "Help request or conversation not found" }, status: :not_found
     end
   end
+  
   private
 
   def set_help_request

@@ -11,12 +11,9 @@ class ConversationsController < ApplicationController
     end
   
     # Fetch help request details and merge with conversation data
-    data = filtered_conversations.map do |conversation|
+      data = filtered_conversations.map do |conversation|
       last_message = conversation.messages.last
       help_request = HelpRequest.find_by(request_count: conversation.help_request_id)
-
-      # Log for debugging
-      Rails.logger.debug("Conversation ID: #{conversation.id}, Help Request ID: #{conversation.help_request_id}, Help Request: #{help_request.inspect}")
 
       {
         id: conversation.id,
@@ -30,12 +27,11 @@ class ConversationsController < ApplicationController
         request_type: help_request ? help_request.request_type : 'N/A',
         description: help_request ? help_request.description : 'N/A',
         completion_status: help_request ? help_request.completion_status : nil,
-        visible: help_request ? help_request.visible : true,
+        visible: conversation.visible,
         assigned_users_count: help_request ? help_request.assigned_users_count : nil
       }
     end
 
-    Rails.logger.debug("Conversations Data: #{data.inspect}")
     
     render json: data
   end

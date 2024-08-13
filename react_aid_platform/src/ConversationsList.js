@@ -1,13 +1,12 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from './context/AuthContext';
-import { Button, Card, Badge } from 'react-bootstrap';
+import { Button } from 'react-bootstrap';
 
 function ConversationsList() {
   const { auth } = useContext(AuthContext);
   const { user } = auth;
   const [conversations, setConversations] = useState([]);
-  const [republishedConversations, setRepublishedConversations] = useState(new Set());
   const [assignedUserCount, setAssignedUserCount] = useState({});
   const navigate = useNavigate();
 
@@ -19,13 +18,9 @@ function ConversationsList() {
           throw new Error(`Failed to fetch conversations: ${response.statusText}`);
         }
         const data = await response.json();
-        console.log('Fetched conversations data:', data); // Log data to inspect
-  
-        // Process the data
-        const republishedSet = new Set(data.filter(conversation => !conversation.visible).map(conversation => conversation.id));
-        setRepublishedConversations(republishedSet);
+        console.log('Fetched conversations:', data); // Add logging here
         setConversations(data);
-  
+
         // Count assigned users for each help request
         const counts = {};
         data.forEach(conversation => {
@@ -46,9 +41,7 @@ function ConversationsList() {
   }, [user]);
 
   const handleConversationSelect = (conversationId) => {
-    if (!republishedConversations.has(conversationId)) {
-      navigate(`/messages/${conversationId}`);
-    }
+    navigate(`/messages/${conversationId}`);
   };
 
   const markHelpRequestComplete = async (helpRequestId) => {
@@ -66,126 +59,93 @@ function ConversationsList() {
       }
 
       // Refresh conversations to ensure UI is in sync with the backend
-      fetchConversations();
+      await fetchConversations(); // Ensure fetchConversations is awaited here
     } catch (error) {
       console.error('Error marking help request as complete:', error);
     }
   };
 
-  const republishHelpRequest = async (helpRequestId, conversationId) => {
+  const republishHelpRequest = async (conversationId, helpRequestId) => {
     try {
       const response = await fetch(`http://localhost:4000/help_requests/${helpRequestId}/republish`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ conversation_id: conversationId, request_count: helpRequestId }),
+        body: JSON.stringify({ conversation_id: conversationId }),
       });
 
       if (!response.ok) {
         throw new Error(`Failed to republish help request: ${response.statusText}`);
       }
 
-      // Refresh conversations to reflect changes
-      fetchConversations();
+      // Refresh conversations to ensure UI is in sync with the backend
+      await fetchConversations(); // Ensure fetchConversations is awaited here
+
     } catch (error) {
       console.error('Error republishing help request:', error);
     }
   };
 
-  // Helper function to get badge class based on request_type
-  const getBadgeClass = (requestType) => {
-    switch (requestType) {
-      case 'one-time-task':
-        return 'bg-primary'; // Bootstrap primary color (blue)
-      case 'material-need':
-        return 'bg-danger'; // Bootstrap danger color (red/pink)
-      default:
-        return 'bg-secondary'; // Default color if unknown type
-    }
-  };
 
   return (
     <div className="conversationsList">
-      <h2>Messages</h2>
-      <div className="row">
+      <h2>Conversations</h2>
+      <ul>
         {Array.isArray(conversations) && conversations.length > 0 ? (
           conversations.map((conversation) => {
             const helpRequestId = conversation.help_request_id;
             const assignedCount = assignedUserCount[helpRequestId] || 0;
-            const canRepublish = assignedCount === 5;
+            const canRepublish = assignedCount >= 5;
             const isComplete = conversation.completion_status;
+            const isRepublished = !conversation.visible;
+            console.log(`Conversation ID: ${conversation.id}, Visible: ${conversation.visible}, Is Republished: ${isRepublished}`);
 
             return (
-              <div className="col-md-4 mb-3" key={conversation.id}>
-                <Card
-                  onClick={() => handleConversationSelect(conversation.id)}
-                  className={`conversation-card ${!conversation.visible || republishedConversations.has(conversation.id) ? 'disabled' : ''}`}
-                  style={{
-                    cursor: (!conversation.visible || republishedConversations.has(conversation.id)) ? 'not-allowed' : 'pointer',
-                    opacity: (!conversation.visible || republishedConversations.has(conversation.id)) ? 0.5 : 1,
-                    backgroundColor: republishedConversations.has(conversation.id) ? 'grey' : 'white'
-                  }}
-                >
-                  <Card.Body>
-                    <div className="d-flex justify-content-between align-items-start mb-2">
-                      <h5 className="mb-0">{conversation.title || 'N/A'}</h5>
-                      <Badge className={`p-2 ${getBadgeClass(conversation.request_type)}`}>
-                        {conversation.request_type || 'N/A'}
-                      </Badge>
-                    </div>
-                    <Card.Text>
-                      Description: {conversation.description || 'N/A'}
-                    </Card.Text>
-                    <Card.Text>
-                      Last Message: {conversation.last_message || 'No messages'}
-                    </Card.Text>
-                    <Card.Text>
-                      Sent at: {new Date(conversation.updated_at).toLocaleString()}
-                    </Card.Text>
-                    <Card.Text>
-                      Help Request ID: {conversation.help_request_id}
-                    </Card.Text>
-                    {conversation.user_id === user.user_id && (
-                      <>
-                        {canRepublish && !isComplete && (
-                          <Button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              republishHelpRequest(helpRequestId, conversation.id);
-                            }}
-                            disabled={!conversation.visible}
-                            variant={republishedConversations.has(conversation.id) ? 'secondary' : 'primary'}
-                            className="me-2"
-                          >
-                            {republishedConversations.has(conversation.id) ? 'Republished' : 'Republish'}
-                          </Button>
-                        )}
+              <li
+                key={conversation.id}
+                onClick={() => handleConversationSelect(conversation.id)}
+              >
+                <div>
+                  <p>Conversation with: {conversation.sender_id === user.user_id ? conversation.user_id : conversation.sender_id}</p>
+                  <p>Last Message: {conversation.last_message}</p>
+                  <p>Sent at: {new Date(conversation.updated_at).toLocaleString()}</p>
+                  <p>Help Request ID: {conversation.help_request_id}</p>
+                  {conversation.user_id === user.user_id && (
+                    <>
+                      {canRepublish && !isComplete && (
                         <Button
                           onClick={(e) => {
                             e.stopPropagation();
-                            markHelpRequestComplete(helpRequestId);
+                            republishHelpRequest(conversation.id, helpRequestId);
                           }}
-                          disabled={isComplete}
-                          variant={isComplete ? 'secondary' : 'primary'}
+                          disabled={isRepublished}
+                          variant={isRepublished ? 'secondary' : 'primary'}
                         >
-                          {isComplete ? 'Completed' : 'Mark as Complete'}
+                          {isRepublished ? 'Republished' : 'Republish Request'}
                         </Button>
-                      </>
-                    )}
-                  </Card.Body>
-                </Card>
-              </div>
+                      )}
+
+                      <Button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          markHelpRequestComplete(helpRequestId);
+                        }}
+                        disabled={isComplete}
+                        variant={isComplete ? 'secondary' : 'primary'}
+                      >
+                        {isComplete ? 'Completed' : 'Mark as Complete'}
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </li>
             );
           })
         ) : (
-          <div className="col-12">
-            <Card>
-              <Card.Body>No conversations found.</Card.Body>
-            </Card>
-          </div>
+          <li>No conversations found.</li>
         )}
-      </div>
+      </ul>
     </div>
   );
 }
