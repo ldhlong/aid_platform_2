@@ -2,14 +2,15 @@ class HelpRequestsController < ApplicationController
   before_action :set_help_request, only: [:show, :update, :mark_complete, :republish]
 
   def index
-    # Fetch help requests with fewer than 5 assigned users
-    help_requests = HelpRequest.where("assigned_users_count < ?", 5)
-    
+    # Fetch help requests with fewer than 5 assigned users or where completion_status is true
+    help_requests = HelpRequest.where("assigned_users_count < ? OR completion_status = ?", 5, true)
+  
     # Group by title and select the first entry in each group
     unique_requests = help_requests.group_by(&:title).values.map(&:first)
-
+  
     render json: unique_requests
   end
+  
 
   def show
     render json: @help_request
@@ -117,22 +118,17 @@ class HelpRequestsController < ApplicationController
   
     if help_request && conversation
       # Update HelpRequest
-      help_request.decrement!(:assigned_users_count)
+      help_request.decrement!(:assigned_users_count) # Assuming you have this field
       help_request.update(visible: true)
   
       # Update Conversation
       conversation.update(visible: false)
   
-      render json: { 
-        message: "Help request republished successfully", 
-        help_request: help_request, 
-        conversation: conversation 
-      }, status: :ok
+      render json: { message: "Help request republished successfully" }, status: :ok
     else
       render json: { error: "Help request or conversation not found" }, status: :not_found
     end
   end
-  
   private
 
   def set_help_request
