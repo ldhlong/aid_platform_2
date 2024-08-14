@@ -20,20 +20,23 @@ function ConversationsList() {
         }
         const data = await response.json();
 
-        // Process the data
-        const republishedSet = new Set(data.filter(conversation => !conversation.visible).map(conversation => conversation.id));
-        setRepublishedConversations(republishedSet);
-        setConversations(data);
-
-        // Count assigned users for each help request
+        // Extract assigned user count directly if provided by the backend
         const counts = {};
         data.forEach(conversation => {
-          if (!counts[conversation.help_request_id]) {
-            counts[conversation.help_request_id] = 0;
+          const helpRequestId = conversation.help_request_id;
+          if (conversation.assigned_users_count !== undefined) {
+            counts[helpRequestId] = conversation.assigned_users_count;
+          } else {
+            if (!counts[helpRequestId]) {
+              counts[helpRequestId] = 0;
+            }
+            counts[helpRequestId]++;
           }
-          counts[conversation.help_request_id]++;
         });
-        setAssignedUserCount(counts);
+
+        setAssignedUserCount(counts); // Refresh assigned user counts
+        setRepublishedConversations(new Set(data.filter(conversation => !conversation.visible).map(conversation => conversation.id)));
+        setConversations(data);
       } catch (error) {
         console.error('Error fetching conversations:', error);
       }
@@ -85,8 +88,8 @@ function ConversationsList() {
         throw new Error(`Failed to republish help request: ${response.statusText}`);
       }
 
-      // Refresh conversations to reflect changes
-      fetchConversations();
+      // Refresh conversations and assigned user count to reflect changes
+      await fetchConversations();
     } catch (error) {
       console.error('Error republishing help request:', error);
     }
